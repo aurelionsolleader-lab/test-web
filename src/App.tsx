@@ -11,6 +11,64 @@ type Lang = 'vi' | 'en' | 'zh' | 'ja';
  * FERROFLOW - Apple-inspired Ferrofluid Display Website
  */
 
+const WaitingListModal = ({ isOpen, onClose, theme }: { isOpen: boolean, onClose: () => void, theme: 'dark' | 'light' }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 backdrop-blur-3xl bg-black/40"
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }}
+            className={`w-full max-w-lg p-8 md:p-12 rounded-[40px] shadow-2xl relative overflow-hidden ${
+              theme === 'dark' ? 'bg-[#151517] text-white border border-white/10' : 'bg-white text-black'
+            }`}
+          >
+            <button 
+              onClick={onClose}
+              className="absolute top-8 right-8 p-2 rounded-full hover:bg-white/5 transition-colors"
+            >
+              <X size={24} />
+            </button>
+            
+            <div className="mb-10">
+              <span className="text-[#0071e3] text-sm font-bold uppercase tracking-widest mb-4 block">Limited Release</span>
+              <h2 className="text-4xl font-bold tracking-tight mb-4">Gia nhập danh sách chờ</h2>
+              <p className="text-lg opacity-60 font-light leading-relaxed">
+                Mở rộng ranh giới sáng tạo. Đăng ký để trở thành người đầu tiên sở hữu những phiên bản giới hạn của đợt mở bán tới.
+              </p>
+            </div>
+
+            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+              <input 
+                type="email" 
+                placeholder="Email của bạn"
+                className={`w-full px-6 py-4 rounded-2xl text-lg outline-none transition-all ${
+                  theme === 'dark' ? 'bg-white/5 border border-white/10 focus:bg-white/10' : 'bg-black/5 border border-transparent focus:bg-black/10'
+                }`}
+              />
+              <button 
+                className="w-full bg-[#0071e3] text-white py-4 rounded-2xl text-lg font-bold hover:bg-[#0077ed] transition-all transform active:scale-95"
+              >
+                Ghi danh ngay
+              </button>
+            </form>
+            
+            <p className="mt-8 text-[11px] opacity-40 text-center uppercase tracking-widest">
+              © 2026 FerroFlow Inc. Bảo mật thông tin tuyệt đối.
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const ScrollToTop = ({ theme }: { theme: 'dark' | 'light' }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -184,10 +242,42 @@ const Navbar = ({
   );
 };
 
-const KineticSection = ({ theme, t }: { theme: 'dark' | 'light', t: any }) => {
+const KineticSection = ({ theme, t, mode }: { theme: 'dark' | 'light', t: any, mode: number }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [mouseX, mouseY]);
+
   return (
-    <div className={`w-full h-[400px] md:h-[600px] rounded-[32px] md:rounded-[48px] overflow-hidden border relative group cursor-crosshair shadow-2xl transition-colors duration-700 ${theme === 'dark' ? 'bg-black border-white/10' : 'bg-white border-black/10'}`}>
-      <FerroSpace activeSection={0} theme={theme} />
+    <div 
+      ref={containerRef}
+      className={`w-full h-[450px] md:h-[650px] rounded-[32px] md:rounded-[48px] overflow-hidden border relative group cursor-none shadow-2xl transition-colors duration-700 ${theme === 'dark' ? 'bg-black border-white/10' : 'bg-white border-black/10'}`}
+    >
+      <FerroSpace theme={theme} mode={mode} />
+      
+      {/* Custom Magnet Cursor Icon */}
+      <motion.div 
+        className="pointer-events-none fixed z-[300] mix-blend-difference hidden md:block"
+        style={{ 
+          x: mouseX, 
+          y: mouseY,
+          translateX: "-50%",
+          translateY: "-50%"
+        }}
+      >
+        <div className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center">
+          <div className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_10px_white]" />
+        </div>
+      </motion.div>
+
       <div className="absolute top-6 md:top-8 left-6 md:left-8 pointer-events-none">
         <p className={`${theme === 'dark' ? 'text-white/40' : 'text-black/40'} text-[8px] md:text-[10px] uppercase tracking-widest font-bold mb-2`}>{t.features.kinetic.simName}</p>
         <div className="flex gap-2">
@@ -197,11 +287,16 @@ const KineticSection = ({ theme, t }: { theme: 'dark' | 'light', t: any }) => {
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
         <p className={`${theme === 'dark' ? 'text-white/10' : 'text-black/10'} text-[9px] uppercase tracking-[1em] font-bold`}>{t.features.kinetic.nanoPhysics}</p>
       </div>
+      
+      <div className="absolute bottom-10 right-10 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-700 hidden md:block pointer-events-none">
+        <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Magnetic Interaction (1/r²)</p>
+        <p className="text-xs text-white/60 font-light italic">Vật liệu phản hồi theo gia tốc con trỏ</p>
+      </div>
     </div>
   );
 };
 
-const Hero = ({ t }: { t: any }) => {
+const Hero = ({ t, onBuyClick }: { t: any, onBuyClick: () => void }) => {
   const scrollRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: scrollRef,
@@ -254,6 +349,7 @@ const Hero = ({ t }: { t: any }) => {
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={onBuyClick}
             className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-10 py-4 rounded-full text-base font-medium transition-all shadow-xl shadow-blue-500/20"
           >
             {t.hero.buy}
@@ -300,7 +396,7 @@ const FeatureSection = ({ title, subtitle, bgImage, dark = true, reverse = false
   );
 };
 
-const ProductCard = ({ name, price, description, image, theme }: { name: string, price: string, description: string, image: string, theme: 'dark' | 'light' }) => {
+const ProductCard = ({ name, price, description, image, theme, onClick, badge }: { name: string, price: string, description: string, image: string, theme: 'dark' | 'light', onClick: () => void, badge: string }) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotateX = useSpring(useTransform(y, [-100, 100], [10, -10]), { damping: 20 });
@@ -321,6 +417,12 @@ const ProductCard = ({ name, price, description, image, theme }: { name: string,
       onMouseLeave={() => { x.set(0); y.set(0); }}
       className={`rounded-[32px] md:rounded-[48px] p-6 md:p-12 flex flex-col h-full group border transition-all duration-700 relative overflow-hidden ${theme === 'dark' ? 'bg-[#1d1d1f] border-white/5 active:bg-[#2c2c2e]' : 'bg-white border-black/5 shadow-xl active:bg-gray-50'}`}
     >
+      <div className="absolute top-8 right-8 z-20">
+        <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border ${theme === 'dark' ? 'bg-white/5 border-white/10 text-white/40' : 'bg-black/5 border-black/10 text-black/40'}`}>
+          {badge}
+        </span>
+      </div>
+      
       <div className="flex-1 mb-6 md:mb-10 overflow-hidden rounded-[24px] md:rounded-[32px] relative shadow-2xl">
         <img src={image} alt={name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
         <div className={`absolute inset-0 transition-opacity duration-1000 ${theme === 'dark' ? 'bg-black/20 group-hover:opacity-0' : 'bg-white/10 group-hover:opacity-0'}`} />
@@ -329,7 +431,10 @@ const ProductCard = ({ name, price, description, image, theme }: { name: string,
       <p className={`text-sm md:text-base font-light mb-6 md:mb-8 leading-relaxed opacity-50 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{description}</p>
       <div className="flex items-center justify-between mt-auto">
         <span className={`text-xl font-medium ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{price}</span>
-        <button className="bg-[#0071e3] text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-[#0077ed] transition-all transform group-hover:translate-x-2">
+        <button 
+          onClick={onClick}
+          className="bg-[#0071e3] text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-[#0077ed] transition-all transform group-hover:translate-x-2"
+        >
           <ChevronRight size={20} />
         </button>
       </div>
@@ -341,6 +446,8 @@ export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [lang, setLang] = useState<Lang>('vi');
   const [transitioning, setTransitioning] = useState(false);
+  const [isWaitingListOpen, setIsWaitingListOpen] = useState(false);
+  const [activeMode, setActiveMode] = useState(0); // 0: Core, 1: Prisma, 2: Orbital
 
   const t = translations[lang];
 
@@ -356,6 +463,7 @@ export default function App() {
     <div className={`min-h-screen font-sans transition-colors duration-700 ${theme === 'dark' ? 'bg-black text-white' : 'bg-[#fafafa] text-[#1d1d1f]'}`}>
       <FerroCanvas theme={theme} />
       <ScrollToTop theme={theme} />
+      <WaitingListModal isOpen={isWaitingListOpen} onClose={() => setIsWaitingListOpen(false)} theme={theme} />
       
       {/* Subtle Overlay during transition */}
       <AnimatePresence>
@@ -387,7 +495,7 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
-            <Hero t={t} />
+            <Hero t={t} onBuyClick={() => setIsWaitingListOpen(true)} />
             
             <div className={`h-32 md:h-40 border-y transition-colors duration-700 flex items-center justify-around px-4 md:px-24 backdrop-blur-md ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'}`}>
               <div className="text-center group">
@@ -442,7 +550,28 @@ export default function App() {
                   {t.features.kinetic.desc}
                 </motion.p>
               </div>
-              <KineticSection theme={theme} t={t} />
+              <KineticSection theme={theme} t={t} mode={activeMode} />
+
+              <div className="mt-10 flex flex-wrap justify-center gap-4">
+                {[
+                  { name: 'Core', label: 'Tĩnh lặng tuyệt đối (Deep Work)' },
+                  { name: 'Prisma', label: 'Cân bằng & Trật tự' },
+                  { name: 'Orbital', label: 'Năng lượng bứt phá' }
+                ].map((modeItem, i) => (
+                  <button 
+                    key={modeItem.name}
+                    onClick={() => setActiveMode(i)}
+                    className={`px-8 py-3 rounded-full text-xs font-bold transition-all border ${
+                      activeMode === i 
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30' 
+                        : (theme === 'dark' ? 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10' : 'bg-black/5 text-black/40 border-black/10 hover:bg-black/10')
+                    }`}
+                  >
+                    <span className="block">{modeItem.name}</span>
+                    <span className="block text-[8px] font-light opacity-60 uppercase tracking-tighter mt-0.5">{modeItem.label}</span>
+                  </button>
+                ))}
+              </div>
             </section>
 
             <FeatureSection 
@@ -461,6 +590,8 @@ export default function App() {
                   description={t.products.items.prisma.desc}
                   image="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800"
                   theme={theme}
+                  onClick={() => setIsWaitingListOpen(true)}
+                  badge="Prisma Series"
                 />
                 <ProductCard 
                   name={t.products.items.orbital.name}
@@ -468,6 +599,8 @@ export default function App() {
                   description={t.products.items.orbital.desc}
                   image="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800"
                   theme={theme}
+                  onClick={() => setIsWaitingListOpen(true)}
+                  badge="Orbital Series"
                 />
                 <ProductCard 
                   name={t.products.items.core.name}
@@ -475,6 +608,8 @@ export default function App() {
                   description={t.products.items.core.desc}
                   image="https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=800"
                   theme={theme}
+                  onClick={() => setIsWaitingListOpen(true)}
+                  badge="Core Series"
                 />
               </div>
             </section>

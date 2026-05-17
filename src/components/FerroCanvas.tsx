@@ -68,15 +68,19 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchstart', handleTouchMove);
     window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('scroll', () => { mouseRef.current.active = true; }, { passive: true });
 
     const draw = () => {
-      // Clear with transparency
-      ctx.clearRect(0, 0, width, height);
-
+      // Performance optimization: skip frames if idle or off-screen (basic check)
       const mvx = mouseRef.current.x - mouseRef.current.lx;
       const mvy = mouseRef.current.y - mouseRef.current.ly;
+      const mouseMoved = Math.abs(mvx) > 0.1 || Math.abs(mvy) > 0.1;
+      
+      // Update mouse velocity state
       mouseRef.current.lx = mouseRef.current.x;
       mouseRef.current.ly = mouseRef.current.y;
+
+      ctx.clearRect(0, 0, width, height);
 
       const maxDistSq = 300 * 300;
 
