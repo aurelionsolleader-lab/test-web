@@ -1,0 +1,8 @@
+{
+  "name": "FerroFlow - Kinetic Art",
+  "description": "High-end ferrofluid displays and kinetic sculptures. Experience the physics of the impossible.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
