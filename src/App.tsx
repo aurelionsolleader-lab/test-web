@@ -95,7 +95,7 @@ const Hero = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black z-10" />
           <img 
-            src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070" 
+            src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1200" 
             alt="Ferrofluid Hero" 
             className="w-full h-full object-cover opacity-60 filter brightness-90"
           />
@@ -286,13 +286,13 @@ export default function App() {
         <FeatureSection 
           title="Ma thuật của từ trường."
           subtitle="Hàng triệu hạt nano từ tính lơ lửng trong một cấu trúc hình học tinh xảo, phản ứng với mọi chuyển động của bạn một cách mượt mà."
-          bgImage="https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=1974"
+          bgImage="https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80"
         />
         
         <FeatureSection 
           title="Chế tác thủ công."
           subtitle="Vỏ kính cường lực Borosilicate và đế gỗ óc chó nguyên khối được tiện thủ công tại xưởng nghệ thuật của chúng tôi bởi những nghệ nhân bậc thầy."
-          bgImage="https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?q=80&w=2067"
+          bgImage="https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?q=80"
           reverse
         />
 
@@ -314,19 +314,19 @@ export default function App() {
               name="Prisma Slate"
               price="4.500.000₫"
               description="Khối kính đa diện tối giản với ferrofluid đen tuyền tinh khiết, mang lại vẻ đẹp tĩnh lặng."
-              image="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964"
+              image="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800"
             />
             <ProductCard 
               name="Orbital Walnut"
               price="6.200.000₫"
               description="Thiết kế hình cầu lơ lửng trên đế gỗ óc chó cao cấp tích hợp nam châm neodymium siêu mạnh."
-              image="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974"
+              image="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800"
             />
             <ProductCard 
               name="Core Ultra"
               price="12.000.000₫"
               description="Phiên bản giới hạn với khả năng tương tác qua âm thanh sống động và ứng dụng di động độc quyền."
-              image="https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=1954"
+              image="https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=800"
             />
           </div>
         </section>
