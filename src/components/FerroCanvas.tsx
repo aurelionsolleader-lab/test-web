@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 
-const FerroCanvas: React.FC = () => {
+interface FerroCanvasProps {
+  theme?: 'dark' | 'light';
+}
+
+const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -1000, y: -1000, lx: -1000, ly: -1000, active: false });
 
@@ -8,7 +12,8 @@ const FerroCanvas: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d', { alpha: false }); // Disable alpha for perf
+    // Use alpha: true to support transparent clearing in light mode
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let animationFrameId: number;
@@ -20,8 +25,6 @@ const FerroCanvas: React.FC = () => {
       height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
-      // We don't scale by devicePixelRatio here to ensure maximum performance
-      // and a slightly grainy "industrial" look that fits ferrofluid
     };
 
     window.addEventListener('resize', resize);
@@ -67,11 +70,9 @@ const FerroCanvas: React.FC = () => {
     window.addEventListener('touchmove', handleTouchMove);
 
     const draw = () => {
-      // Clear with solid black for performance
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, width, height);
+      // Clear with transparency
+      ctx.clearRect(0, 0, width, height);
 
-      // Mouse velocity for "fluid" feel
       const mvx = mouseRef.current.x - mouseRef.current.lx;
       const mvy = mouseRef.current.y - mouseRef.current.ly;
       mouseRef.current.lx = mouseRef.current.x;
@@ -79,8 +80,6 @@ const FerroCanvas: React.FC = () => {
 
       const maxDistSq = 300 * 300;
 
-      // Group particles into a single path if possible, but spikes need individual rotation
-      // Let's use a very optimized loop
       particles.forEach((p) => {
         const dx = mouseRef.current.x - p.ox;
         const dy = mouseRef.current.y - p.oy;
@@ -94,21 +93,15 @@ const FerroCanvas: React.FC = () => {
         if (distSq < maxDistSq) {
           const dist = Math.sqrt(distSq);
           intensity = 1 - dist / 300;
-          
-          // Magnet attraction
           const force = intensity * 0.6;
           tx = p.ox + dx * force;
           ty = p.oy + dy * force;
-          
-          // Spike gets longer when nearer to magnet (mouse)
           spikeScale = 0.4 + intensity * 2.5;
 
-          // Mouse movement "wind" effect
           p.vx += mvx * intensity * 0.1;
           p.vy += mvy * intensity * 0.1;
         }
 
-        // Physics: Spring + Damping
         p.vx += (tx - p.x) * 0.2;
         p.vy += (ty - p.y) * 0.2;
         p.vx *= 0.8;
@@ -117,7 +110,6 @@ const FerroCanvas: React.FC = () => {
         p.x += p.vx;
         p.y += p.vy;
 
-        // Draw "Gai Đen" (Black Spikes)
         const angle = Math.atan2(mouseRef.current.y - p.y, mouseRef.current.x - p.x);
         
         ctx.save();
@@ -127,7 +119,6 @@ const FerroCanvas: React.FC = () => {
         const l = spikeScale * 10;
         const w = spikeScale * 2.5;
 
-        // Draw spike body (Deep Black)
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(-l, -w);
@@ -135,32 +126,41 @@ const FerroCanvas: React.FC = () => {
         ctx.lineTo(-l, w);
         ctx.closePath();
         
-        // Dynamic Fill: Metallic dark gradient feel
-        if (intensity > 0) {
-          const grad = ctx.createLinearGradient(0, 0, -l, 0);
-          grad.addColorStop(0, `rgba(40, 50, 70, ${0.4 + intensity * 0.6})`); // Tip highlight
-          grad.addColorStop(1, `rgba(10, 10, 12, ${0.8 + intensity * 0.2})`); // Base deep black
-          ctx.fillStyle = grad;
+        if (theme === 'dark') {
+          if (intensity > 0) {
+            const grad = ctx.createLinearGradient(0, 0, -l, 0);
+            grad.addColorStop(0, `rgba(60, 80, 120, ${0.4 + intensity * 0.6})`);
+            grad.addColorStop(1, `rgba(10, 10, 15, ${0.8 + intensity * 0.2})`);
+            ctx.fillStyle = grad;
+          } else {
+            ctx.fillStyle = 'rgba(20, 20, 25, 0.4)';
+          }
         } else {
-          ctx.fillStyle = 'rgba(15, 15, 18, 0.5)';
+          // Light mode: Darker, sharper spikes
+          if (intensity > 0) {
+            const grad = ctx.createLinearGradient(0, 0, -l, 0);
+            grad.addColorStop(0, `rgba(30, 30, 40, ${0.7 + intensity * 0.3})`);
+            grad.addColorStop(1, `rgba(60, 60, 80, ${0.5 + intensity * 0.2})`);
+            ctx.fillStyle = grad;
+          } else {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+          }
         }
         ctx.fill();
 
-        // Sharp highlight on the edge to make it look "sharp"
         if (intensity > 0.1) {
           ctx.beginPath();
           ctx.moveTo(0, 0);
           ctx.lineTo(-l, -w * 0.2);
-          ctx.strokeStyle = `rgba(255, 255, 255, ${intensity * 0.3})`;
+          ctx.strokeStyle = theme === 'dark' ? `rgba(255, 255, 255, ${intensity * 0.3})` : `rgba(0, 0, 0, ${intensity * 0.2})`;
           ctx.lineWidth = 0.5;
           ctx.stroke();
         }
 
-        // Tip "reflection"
-        if (intensity > 0.4) {
+        if (intensity > 0.4 && theme === 'dark') {
           ctx.beginPath();
           ctx.arc(0, 0, 0.6, 0, Math.PI * 2);
-          ctx.fillStyle = '#2997ff'; // Apple Blue highlight
+          ctx.fillStyle = '#2997ff';
           ctx.fill();
         }
 
@@ -179,13 +179,13 @@ const FerroCanvas: React.FC = () => {
       window.removeEventListener('touchmove', handleTouchMove);
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ mixBlendMode: 'screen' }} // Helps the black spikes look like they have depth on top of background
+      style={{ mixBlendMode: theme === 'dark' ? 'screen' : 'multiply' }}
     />
   );
 };
