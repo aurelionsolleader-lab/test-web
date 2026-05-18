@@ -7,10 +7,15 @@ interface FerroCanvasProps {
 const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -1000, y: -1000, lx: -1000, ly: -1000, active: false });
+  const scrollRef = useRef({ y: 0, lastY: 0, v: 0 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Initialize scroll position
+    scrollRef.current.y = window.scrollY;
+    scrollRef.current.lastY = window.scrollY;
 
     // Use alpha: true to support transparent clearing in light mode
     const ctx = canvas.getContext('2d', { alpha: true });
@@ -20,11 +25,17 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
     let width: number;
     let height: number;
 
+    let activeFrames = 60;
+    const requestDraw = () => {
+      activeFrames = 120;
+    };
+
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
+      requestDraw();
     };
 
     window.addEventListener('resize', resize);
@@ -53,6 +64,7 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
       mouseRef.current.active = true;
+      requestDraw();
     };
 
     const handleTouchMove = (e: TouchEvent) => {
@@ -62,19 +74,44 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
         mouseRef.current.x = e.touches[0].clientX;
         mouseRef.current.y = e.touches[0].clientY;
         mouseRef.current.active = true;
+        requestDraw();
       }
+    };
+
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const dy = currentY - scrollRef.current.y;
+      scrollRef.current.y = currentY;
+      scrollRef.current.v += dy * 0.5; // Accumulate velocity immediately
+      
+      mouseRef.current.active = true;
+      requestDraw();
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchstart', handleTouchMove);
     window.addEventListener('touchmove', handleTouchMove);
-    window.addEventListener('scroll', () => { mouseRef.current.active = true; }, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     const draw = () => {
+      if (activeFrames <= 0) {
+        animationFrameId = requestAnimationFrame(draw);
+        return;
+      }
+      activeFrames--;
+
+      // Decay scroll velocity smoothly
+      scrollRef.current.v *= 0.85;
+      
+      // Cap scroll velocity
+      if (Math.abs(scrollRef.current.v) > 100) {
+        scrollRef.current.v = Math.sign(scrollRef.current.v) * 100;
+      }
+
       // Performance optimization: skip frames if idle or off-screen (basic check)
       const mvx = mouseRef.current.x - mouseRef.current.lx;
       const mvy = mouseRef.current.y - mouseRef.current.ly;
-      const mouseMoved = Math.abs(mvx) > 0.1 || Math.abs(mvy) > 0.1;
+      const isMoving = Math.abs(mvx) > 0.1 || Math.abs(mvy) > 0.1 || Math.abs(scrollRef.current.v) > 0.1;
       
       // Update mouse velocity state
       mouseRef.current.lx = mouseRef.current.x;
@@ -106,6 +143,9 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
           p.vy += mvy * intensity * 0.1;
         }
 
+        // Apply scroll wind force
+        p.vy -= scrollRef.current.v * 0.15;
+
         p.vx += (tx - p.x) * 0.2;
         p.vy += (ty - p.y) * 0.2;
         p.vx *= 0.8;
@@ -114,11 +154,14 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
         p.x += p.vx;
         p.y += p.vy;
 
-        const angle = Math.atan2(mouseRef.current.y - p.y, mouseRef.current.x - p.x);
+        // Introduce scroll velocity to the target point so spikes tilt as if "blown" by wind
+        const targetX = mouseRef.current.x;
+        const targetY = mouseRef.current.y - scrollRef.current.v * 30;
+        const angle = Math.atan2(targetY - p.y, targetX - p.x);
         
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(angle);
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        ctx.setTransform(cos, sin, -sin, cos, p.x, p.y);
         
         const l = spikeScale * 10;
         const w = spikeScale * 2.5;
@@ -132,20 +175,13 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
         
         if (theme === 'dark') {
           if (intensity > 0) {
-            const grad = ctx.createLinearGradient(0, 0, -l, 0);
-            grad.addColorStop(0, `rgba(60, 80, 120, ${0.4 + intensity * 0.6})`);
-            grad.addColorStop(1, `rgba(10, 10, 15, ${0.8 + intensity * 0.2})`);
-            ctx.fillStyle = grad;
+            ctx.fillStyle = `rgba(60, 80, 120, ${0.4 + intensity * 0.6})`;
           } else {
             ctx.fillStyle = 'rgba(20, 20, 25, 0.4)';
           }
         } else {
-          // Light mode: Darker, sharper spikes
           if (intensity > 0) {
-            const grad = ctx.createLinearGradient(0, 0, -l, 0);
-            grad.addColorStop(0, `rgba(30, 30, 40, ${0.7 + intensity * 0.3})`);
-            grad.addColorStop(1, `rgba(60, 60, 80, ${0.5 + intensity * 0.2})`);
-            ctx.fillStyle = grad;
+            ctx.fillStyle = `rgba(30, 30, 40, ${0.7 + intensity * 0.3})`;
           } else {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
           }
@@ -167,9 +203,10 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
           ctx.fillStyle = '#2997ff';
           ctx.fill();
         }
-
-        ctx.restore();
       });
+
+      // Reset transform after loop
+      ctx.resetTransform();
 
       animationFrameId = requestAnimationFrame(draw);
     };

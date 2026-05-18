@@ -3,15 +3,51 @@ import { ChevronRight, Menu, X, Instagram, Twitter, Youtube, Sun, Moon, Globe, A
 import { useState, useRef, useEffect } from "react";
 import FerroSpace from "./components/FerroSpace";
 import FerroCanvas from "./components/FerroCanvas";
+import Ferrofluid from "./components/Ferrofluid";
+import { Canvas } from "@react-three/fiber";
+import { Environment, OrbitControls, ContactShadows } from "@react-three/drei";
 import { translations } from "./lib/translations";
 
-type Lang = 'vi' | 'en' | 'zh' | 'ja';
+import FerrofluidWebgl from "./components/FerrofluidWebgl";
+
+type Lang = 'en' | 'vi' | 'zh' | 'ja';
 
 /**
  * FERROFLOW - Apple-inspired Ferrofluid Display Website
  */
 
-const WaitingListModal = ({ isOpen, onClose, theme }: { isOpen: boolean, onClose: () => void, theme: 'dark' | 'light' }) => {
+const WaitingListModal = ({ isOpen, onClose, theme, lang, t }: { isOpen: boolean, onClose: () => void, theme: 'dark' | 'light', lang: Lang, t: any }) => {
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, lang })
+      });
+      
+      if (response.ok) {
+        setIsSuccess(true);
+        setTimeout(() => {
+          setIsSuccess(false);
+          setEmail("");
+          onClose();
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -37,30 +73,44 @@ const WaitingListModal = ({ isOpen, onClose, theme }: { isOpen: boolean, onClose
             </button>
             
             <div className="mb-10">
-              <span className="text-[#0071e3] text-sm font-bold uppercase tracking-widest mb-4 block">Limited Release</span>
-              <h2 className="text-4xl font-bold tracking-tight mb-4">Gia nhập danh sách chờ</h2>
+              <span className="text-[#0071e3] text-sm font-bold uppercase tracking-widest mb-4 block">{t.modal.tag}</span>
+              <h2 className="text-4xl font-bold tracking-tight mb-4">{t.modal.title}</h2>
               <p className="text-lg opacity-60 font-light leading-relaxed">
-                Mở rộng ranh giới sáng tạo. Đăng ký để trở thành người đầu tiên sở hữu những phiên bản giới hạn của đợt mở bán tới.
+                {t.modal.desc}
               </p>
             </div>
 
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <input 
-                type="email" 
-                placeholder="Email của bạn"
-                className={`w-full px-6 py-4 rounded-2xl text-lg outline-none transition-all ${
-                  theme === 'dark' ? 'bg-white/5 border border-white/10 focus:bg-white/10' : 'bg-black/5 border border-transparent focus:bg-black/10'
-                }`}
-              />
-              <button 
-                className="w-full bg-[#0071e3] text-white py-4 rounded-2xl text-lg font-bold hover:bg-[#0077ed] transition-all transform active:scale-95"
+            {isSuccess ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-green-500/10 border border-green-500/20 text-green-500 p-6 rounded-3xl text-center font-medium"
               >
-                Ghi danh ngay
-              </button>
-            </form>
+                {t.modal.success}
+              </motion.div>
+            ) : (
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t.modal.email}
+                  required
+                  className={`w-full px-6 py-4 rounded-2xl text-lg outline-none transition-all ${
+                    theme === 'dark' ? 'bg-white/5 border border-white/10 focus:bg-white/10' : 'bg-black/5 border border-transparent focus:bg-black/10'
+                  }`}
+                />
+                <button 
+                  disabled={isSubmitting}
+                  className={`w-full bg-[#0071e3] text-white py-4 rounded-2xl text-lg font-bold hover:bg-[#0077ed] transition-all transform active:scale-95 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {isSubmitting ? "..." : t.modal.submit}
+                </button>
+              </form>
+            )}
             
             <p className="mt-8 text-[11px] opacity-40 text-center uppercase tracking-widest">
-              © 2026 FerroFlow Inc. Bảo mật thông tin tuyệt đối.
+              {t.modal.privacy}
             </p>
           </motion.div>
         </motion.div>
@@ -124,8 +174,8 @@ const Navbar = ({
   const [isScrolled, setIsScrolled] = useState(false);
 
   const languages = [
-    { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
     { code: 'en', label: 'English', flag: '🇺🇸' },
+    { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
     { code: 'zh', label: '中文', flag: '🇨🇳' },
     { code: 'ja', label: '日本語', flag: '🇯🇵' }
   ];
@@ -242,10 +292,11 @@ const Navbar = ({
   );
 };
 
-const KineticSection = ({ theme, t, mode }: { theme: 'dark' | 'light', t: any, mode: number }) => {
+const KineticSection = ({ theme, t }: { theme: 'dark' | 'light', t: any }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -257,42 +308,36 @@ const KineticSection = ({ theme, t, mode }: { theme: 'dark' | 'light', t: any, m
   }, [mouseX, mouseY]);
 
   return (
-    <div 
+    <motion.div 
       ref={containerRef}
-      className={`w-full h-[450px] md:h-[650px] rounded-[32px] md:rounded-[48px] overflow-hidden border relative group cursor-none shadow-2xl transition-colors duration-700 ${theme === 'dark' ? 'bg-black border-white/10' : 'bg-white border-black/10'}`}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`w-full h-[450px] md:h-[650px] rounded-[32px] md:rounded-[48px] overflow-hidden border relative group shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-700 backdrop-blur-md flex flex-col z-[10000] ${
+        theme === 'dark' 
+          ? 'bg-[#050507]/60 border-white/10 ring-1 ring-white/5' 
+          : 'bg-white/40 border-black/10 ring-1 ring-black/5'
+      }`}
     >
-      <FerroSpace theme={theme} mode={mode} />
+      <div className="absolute inset-0 z-0 overflow-hidden rounded-[32px] md:rounded-[48px]">
+        <FerrofluidWebgl />
+      </div>
       
-      {/* Custom Magnet Cursor Icon */}
-      <motion.div 
-        className="pointer-events-none fixed z-[300] mix-blend-difference hidden md:block"
-        style={{ 
-          x: mouseX, 
-          y: mouseY,
-          translateX: "-50%",
-          translateY: "-50%"
-        }}
-      >
-        <div className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center">
-          <div className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_10px_white]" />
-        </div>
-      </motion.div>
-
-      <div className="absolute top-6 md:top-8 left-6 md:left-8 pointer-events-none">
-        <p className={`${theme === 'dark' ? 'text-white/40' : 'text-black/40'} text-[8px] md:text-[10px] uppercase tracking-widest font-bold mb-2`}>{t.features.kinetic.simName}</p>
+      <div className="absolute top-6 md:top-8 left-6 md:left-8 pointer-events-none z-10 mix-blend-difference">
+        <p className={`text-white/80 text-[8px] md:text-[10px] uppercase tracking-widest font-bold mb-2`}>{t.features.kinetic.simName || "FERROFLUID REACTOR"}</p>
         <div className="flex gap-2">
           <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
         </div>
       </div>
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
-        <p className={`${theme === 'dark' ? 'text-white/10' : 'text-black/10'} text-[9px] uppercase tracking-[1em] font-bold`}>{t.features.kinetic.nanoPhysics}</p>
-      </div>
       
-      <div className="absolute bottom-10 right-10 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-700 hidden md:block pointer-events-none">
-        <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Magnetic Interaction (1/r²)</p>
-        <p className="text-xs text-white/60 font-light italic">Vật liệu phản hồi theo gia tốc con trỏ</p>
+      <div className="absolute bottom-6 md:bottom-10 left-6 md:left-10 text-left pointer-events-none z-10 md:block mix-blend-difference">
+        <p className="text-[10px] text-white/60 uppercase tracking-widest font-bold mb-1">Interactive Fluid</p>
+        <p className="text-xs text-white/80 font-light italic">Drag to interact</p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -371,8 +416,8 @@ const FeatureSection = ({ title, subtitle, bgImage, dark = true, reverse = false
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: "-10%" }}
           >
             <h2 className="text-4xl md:text-7xl font-semibold tracking-tighter mb-6 md:mb-8 leading-tight">
               {title}
@@ -383,10 +428,10 @@ const FeatureSection = ({ title, subtitle, bgImage, dark = true, reverse = false
           </motion.div>
         </div>
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 40, scale: 0.98 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          viewport={{ once: true, margin: "-10%" }}
           className={`relative aspect-video md:aspect-[4/3] rounded-[32px] md:rounded-[48px] overflow-hidden shadow-2xl border border-white/10 ${reverse ? 'md:order-1' : ''}`}
         >
           <img src={bgImage} alt={title} className="w-full h-full object-cover" />
@@ -443,11 +488,10 @@ const ProductCard = ({ name, price, description, image, theme, onClick, badge }:
 };
 
 export default function App() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [lang, setLang] = useState<Lang>('vi');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [lang, setLang] = useState<Lang>('en');
   const [transitioning, setTransitioning] = useState(false);
   const [isWaitingListOpen, setIsWaitingListOpen] = useState(false);
-  const [activeMode, setActiveMode] = useState(0); // 0: Core, 1: Prisma, 2: Orbital
 
   const t = translations[lang];
 
@@ -461,9 +505,10 @@ export default function App() {
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-700 ${theme === 'dark' ? 'bg-black text-white' : 'bg-[#fafafa] text-[#1d1d1f]'}`}>
+      <div className="grain-overlay" />
       <FerroCanvas theme={theme} />
       <ScrollToTop theme={theme} />
-      <WaitingListModal isOpen={isWaitingListOpen} onClose={() => setIsWaitingListOpen(false)} theme={theme} />
+      <WaitingListModal isOpen={isWaitingListOpen} onClose={() => setIsWaitingListOpen(false)} theme={theme} lang={lang} t={t} />
       
       {/* Subtle Overlay during transition */}
       <AnimatePresence>
@@ -535,43 +580,26 @@ export default function App() {
             <section id="kinetic" className="py-20 md:py-40 px-4 md:px-6 max-w-[1240px] mx-auto overflow-hidden">
               <div className="mb-12 md:mb-24">
                 <motion.h2 
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                   className={`text-5xl md:text-8xl font-bold tracking-tighter mb-6 md:mb-8 ${theme === 'dark' ? 'text-white' : 'text-[#111]'}`}
                 >
                   {t.features.kinetic.title}
                 </motion.h2>
                 <motion.p 
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                     className={`text-lg md:text-3xl font-light tracking-tight max-w-3xl leading-relaxed ${theme === 'dark' ? 'text-white/50' : 'text-black/60'}`}
                 >
                   {t.features.kinetic.desc}
                 </motion.p>
               </div>
-              <KineticSection theme={theme} t={t} mode={activeMode} />
+              <KineticSection theme={theme} t={t} />
 
-              <div className="mt-10 flex flex-wrap justify-center gap-4">
-                {[
-                  { name: 'Core', label: 'Tĩnh lặng tuyệt đối (Deep Work)' },
-                  { name: 'Prisma', label: 'Cân bằng & Trật tự' },
-                  { name: 'Orbital', label: 'Năng lượng bứt phá' }
-                ].map((modeItem, i) => (
-                  <button 
-                    key={modeItem.name}
-                    onClick={() => setActiveMode(i)}
-                    className={`px-8 py-3 rounded-full text-xs font-bold transition-all border ${
-                      activeMode === i 
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30' 
-                        : (theme === 'dark' ? 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10' : 'bg-black/5 text-black/40 border-black/10 hover:bg-black/10')
-                    }`}
-                  >
-                    <span className="block">{modeItem.name}</span>
-                    <span className="block text-[8px] font-light opacity-60 uppercase tracking-tighter mt-0.5">{modeItem.label}</span>
-                  </button>
-                ))}
-              </div>
             </section>
 
             <FeatureSection 
@@ -580,44 +608,88 @@ export default function App() {
               bgImage="https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=2000"
               dark={theme === 'dark'}
             />
+            
+            <FeatureSection 
+              title={t.features.safety.title}
+              subtitle={t.features.safety.desc}
+              bgImage="https://images.unsplash.com/photo-1627409240893-6059d06bde68?q=80&w=2000"
+              dark={theme === 'dark'}
+              reverse={true}
+            />
+
+            <FeatureSection 
+              title={t.features.kinetic.venom}
+              subtitle={t.features.kinetic.colors}
+              bgImage="https://images.unsplash.com/photo-1629828330752-959b8ca6df9d?q=80&w=2000"
+              dark={theme === 'dark'}
+            />
 
             <section id="store" className="py-20 md:py-40 px-4 md:px-6 max-w-[1240px] mx-auto">
-              <h2 className={`text-6xl md:text-9xl font-bold tracking-tighter mb-12 md:mb-24 text-center ${theme === 'dark' ? 'text-white' : 'text-[#111]'}`}>{t.products.title}</h2>
+              <motion.h2 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                className={`text-6xl md:text-9xl font-bold tracking-tighter mb-12 md:mb-24 text-center ${theme === 'dark' ? 'text-white' : 'text-[#111]'}`}
+              >
+                {t.products.title}
+              </motion.h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12">
-                <ProductCard 
-                  name={t.products.items.prisma.name}
-                  price={t.products.items.prisma.price}
-                  description={t.products.items.prisma.desc}
-                  image="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800"
-                  theme={theme}
-                  onClick={() => setIsWaitingListOpen(true)}
-                  badge="Prisma Series"
-                />
-                <ProductCard 
-                  name={t.products.items.orbital.name}
-                  price={t.products.items.orbital.price}
-                  description={t.products.items.orbital.desc}
-                  image="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800"
-                  theme={theme}
-                  onClick={() => setIsWaitingListOpen(true)}
-                  badge="Orbital Series"
-                />
-                <ProductCard 
-                  name={t.products.items.core.name}
-                  price={t.products.items.core.price}
-                  description={t.products.items.core.desc}
-                  image="https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=800"
-                  theme={theme}
-                  onClick={() => setIsWaitingListOpen(true)}
-                  badge="Core Series"
-                />
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <ProductCard 
+                    name={t.products.items.prisma.name}
+                    price={t.products.items.prisma.price}
+                    description={t.products.items.prisma.desc}
+                    image="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800"
+                    theme={theme}
+                    onClick={() => setIsWaitingListOpen(true)}
+                    badge="Prisma Series"
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <ProductCard 
+                    name={t.products.items.orbital.name}
+                    price={t.products.items.orbital.price}
+                    description={t.products.items.orbital.desc}
+                    image="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800"
+                    theme={theme}
+                    onClick={() => setIsWaitingListOpen(true)}
+                    badge="Orbital Series"
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <ProductCard 
+                    name={t.products.items.core.name}
+                    price={t.products.items.core.price}
+                    description={t.products.items.core.desc}
+                    image="https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=800"
+                    theme={theme}
+                    onClick={() => setIsWaitingListOpen(true)}
+                    badge="Core Series"
+                  />
+                </motion.div>
               </div>
             </section>
           </motion.div>
         </AnimatePresence>
       </main>
 
-      <footer className={`py-20 md:py-40 px-6 border-t mt-20 transition-colors duration-700 ${theme === 'dark' ? 'bg-black border-white/10' : 'bg-[#f5f5f7] border-black/5'}`}>
+      <footer id="support" className={`py-20 md:py-40 px-6 border-t mt-20 transition-colors duration-700 ${theme === 'dark' ? 'bg-black border-white/10' : 'bg-[#f5f5f7] border-black/5'}`}>
         <div className="max-w-[1240px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-20">
           <div>
             <div className="flex items-center gap-2 mb-8 md:mb-10">
@@ -650,6 +722,8 @@ export default function App() {
           </div>
           <div className={`${theme === 'dark' ? 'text-white/20' : 'text-black/40'} text-[10px] leading-loose`}>
             {t.footer.copy}<br/>{t.footer.desc}
+            <br />
+            <span className="font-semibold italic">{t.footer.attribution}</span>
           </div>
         </div>
       </footer>

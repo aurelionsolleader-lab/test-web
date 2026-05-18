@@ -13,6 +13,15 @@ export const translations = {
       buy: "Mua ngay",
       learn: "Tìm hiểu thêm"
     },
+    modal: {
+      tag: "Phát hành giới hạn",
+      title: "Gia nhập danh sách chờ",
+      desc: "Mở rộng ranh giới sáng tạo. Đăng ký để trở thành người đầu tiên sở hữu những phiên bản giới hạn của đợt mở bán tới.",
+      email: "Email của bạn",
+      submit: "Ghi danh ngay",
+      privacy: "© 2026 FerroFlow Inc. Bảo mật thông tin tuyệt đối.",
+      success: "Cảm ơn bạn! Chúng tôi sẽ liên hệ sớm nhất."
+    },
     features: {
       stats: {
         nano: "Hạt Nano",
@@ -21,38 +30,46 @@ export const translations = {
       },
       kinetic: {
         title: "Động học.",
-        desc: "Khám phá thực thể Ferrofluid trong không gian 3D. Tương tác và xoay để mọc gai theo ý muốn.",
+        desc: "Khám phá thực thể Ferrofluid trong không gian 3D. Tương tác và huýt sáo để điều khiển các gai nhọn phát triển.",
         simName: "Mô phỏng 3D Ferrofluid",
-        nanoPhysics: "Vật lý nano 3D"
+        nanoPhysics: "Vật lý nano 3D",
+        colors: "Màu sắc huyền bí",
+        interaction: "Tương tác từ tính",
+        venom: "Phiên bản Venom Fluid",
+      },
+      safety: {
+        title: "Lưu ý an toàn tuyệt đối.",
+        desc: "Lọ đựng làm từ thủy tinh trong suốt chất lượng cao. KHÔNG mở nắp, KHÔNG để gần nguồn nhiệt và tránh xa tầm tay trẻ em. Nếu vỡ, KHÔNG chạm, hít hay nuốt chất lỏng bên trong.",
       },
       movement: {
         title: "Nghệ thuật của chuyển động.",
-        subtitle: "Mỗi giọt Flux Pro là kết tinh của hàng triệu hạt nano, phản ứng tức thì với từ trường Neodymium siêu mạnh."
+        subtitle: "Khối chất lỏng đen tuyền tuyệt đối kết tinh từ hàng triệu hạt nano, phản ứng tức thì với từ trường Neodymium siêu mạnh tạo ra các bề mặt láng bóng như gương với ánh vàng hổ phách."
       }
     },
     products: {
-      title: "Bản Pro.",
+      title: "Bộ sưu tập",
       items: {
         prisma: {
-          name: "Prisma Slate",
-          price: "4.5tr₫",
-          desc: "Khối kính đa diện tối giản với ferrofluid đen tuyền tinh khiết."
+          name: "Black Venom Bottle",
+          price: "1.5tr₫",
+          desc: "Chất lỏng đen tuyền bóng loáng trong lọ thuỷ tinh cao cấp. Kèm bộ nam châm Neodymium để tạo gai."
         },
         orbital: {
-          name: "Orbital Walnut",
-          price: "6.2tr₫",
-          desc: "Thiết kế hình cầu lơ lửng trên đế gỗ óc chó cao cấp."
+          name: "Colorful Magnetic Fluid",
+          price: "2.8tr₫",
+          desc: "Sắc màu rực rỡ và từ tính ma thuật, hiển thị chất lỏng phản sáng đa diện."
         },
         core: {
-          name: "Core Ultra",
-          price: "12tr₫",
-          desc: "Phiên bản giới hạn với khả năng tương tác âm thanh."
+          name: "Pro Display Kit",
+          price: "4.2tr₫",
+          desc: "Set hiển thị cao cấp. Tương tác mượt mà, phản xạ ánh sáng vàng hổ phách siêu thực."
         }
       }
     },
     footer: {
       desc: "Sản phẩm kết hợp giữa nghệ thuật và vật lý nano.",
       copy: "© 2026 FerroFlow Inc. Việt Nam.",
+      attribution: "Thuật toán mô phỏng ferrofluid dựa trên mã nguồn mở của Robert Leitl (Giấy phép MIT).",
       links: {
         prisma: "Dòng Prisma",
         orbital: "Dòng Orbital",
@@ -76,6 +93,15 @@ export const translations = {
       buy: "Buy Now",
       learn: "Learn More"
     },
+    modal: {
+      tag: "Limited Release",
+      title: "Join the Waitlist",
+      desc: "Expand the boundaries of creativity. Register to be among the first to own limited editions of our upcoming release.",
+      email: "Your email",
+      submit: "Join Now",
+      privacy: "© 2026 FerroFlow Inc. Absolute privacy guaranteed.",
+      success: "Thank you! We will reach out to you soon."
+    },
     features: {
       stats: {
         nano: "Nano Particles",
@@ -84,38 +110,46 @@ export const translations = {
       },
       kinetic: {
         title: "Kinetic.",
-        desc: "Explore Ferrofluid entities in 3D space. Interact and rotate to grow spikes at will.",
+        desc: "Explore Ferrofluid entities in 3D space. Interact and whistle to grow spikes at will.",
         simName: "3D Ferrofluid Simulation",
-        nanoPhysics: "3D Nano Physics"
+        nanoPhysics: "3D Nano Physics",
+        colors: "Mysterious Colors",
+        interaction: "Magnetic Interaction",
+        venom: "Venom Fluid Edition",
+      },
+      safety: {
+        title: "Strict Safety Guidelines.",
+        desc: "Bottle made of high-quality glass. Do NOT open the bottle, keep away from heat, and keep out of reach of children. If broken, do NOT touch, inhale, or swallow the liquid.",
       },
       movement: {
         title: "The Art of Motion.",
-        subtitle: "Every drop of Flux Pro is a crystallization of millions of nanoparticles, reacting instantly to Neodymium fields."
+        subtitle: "A deep jet-black liquid crystalized from millions of nanoparticles. It reacts instantly to Neodymium magnets, creating mirror-like glossy surfaces with stunning amber and gold reflections."
       }
     },
     products: {
-      title: "Pro Edition.",
+      title: "The Collection.",
       items: {
         prisma: {
-          name: "Prisma Slate",
-          price: "$180",
-          desc: "Minimalist polyhedral glass with pure black ferrofluid."
+          name: "Black Venom Bottle",
+          price: "$59",
+          desc: "Pure jet-black ferrofluid in a premium glass display bottle. Includes Neodymium magnets."
         },
         orbital: {
-          name: "Orbital Walnut",
-          price: "$250",
-          desc: "Spherical design suspended on a premium walnut base."
+          name: "Colorful Magnetic Fluid",
+          price: "$89",
+          desc: "Vibrant colors and magnetic magic in a mesmerizing interactive fluid display."
         },
         core: {
-          name: "Core Ultra",
-          price: "$480",
-          desc: "Limited edition with rhythmic audio interaction."
+          name: "Pro Display Kit",
+          price: "$149",
+          desc: "The ultimate showcase kit. Interactive fluid with highly reflective chrome and amber highlights."
         }
       }
     },
     footer: {
       desc: "A fusion of material science and contemporary art.",
       copy: "© 2026 FerroFlow Inc. worldwide.",
+      attribution: "Ferrofluid simulation based on open-source work by Robert Leitl (MIT License).",
       links: {
         prisma: "Prisma Series",
         orbital: "Orbital Series",
@@ -139,6 +173,15 @@ export const translations = {
       buy: "立即购买",
       learn: "了解更多"
     },
+    modal: {
+      tag: "限量发布",
+      title: "加入等待名单",
+      desc: "扩展创意边界。注册成为首批拥有我们即将发布的限量版的用户。",
+      email: "您的电子邮箱",
+      submit: "立即加入",
+      privacy: "© 2026 FerroFlow Inc. 绝对隐私保障。",
+      success: "谢谢！我们将尽快为您服务。"
+    },
     features: {
       stats: {
         nano: "纳米颗粒",
@@ -147,9 +190,16 @@ export const translations = {
       },
       kinetic: {
         title: "动力学。",
-        desc: "在3D空间中探索流体。根据您的意愿互动并旋转以生长尖峰。",
+        desc: "在3D空间中探索流体。根据您的意愿互动并吹哨以生长尖峰。",
         simName: "3D磁流体模拟",
-        nanoPhysics: "3D纳米物理"
+        nanoPhysics: "3D纳米物理",
+        colors: "神秘的色彩",
+        interaction: "磁性相互作用",
+        venom: "Venom Fluid 版本",
+      },
+      safety: {
+        title: "严格的安全指南。",
+        desc: "瓶子由高品质玻璃制成。切勿打开瓶盖，远离热源，远离儿童。如果破裂，切勿触摸、吸入或吞咽液体。",
       },
       movement: {
         title: "运动的艺术。",
@@ -179,6 +229,7 @@ export const translations = {
     footer: {
       desc: "材料科学与当代艺术的融合。",
       copy: "© 2026 FerroFlow Inc. 全球版权所有。",
+      attribution: "Ferrofluid 模拟基于 Robert Leitl 的开源作品（MIT 许可证）。",
       links: {
         prisma: "Prisma 系列",
         orbital: "Orbital 系列",
@@ -202,6 +253,15 @@ export const translations = {
       buy: "今すぐ購入",
       learn: "詳しく見る"
     },
+    modal: {
+      tag: "限定リリース",
+      title: "ウィッシュリストに参加",
+      desc: "創造性の境界を広げる。次回の限定版を誰よりも早く手に入れるために登録しましょう。",
+      email: "メールアドレス",
+      submit: "今すぐ登録",
+      privacy: "© 2026 FerroFlow Inc. プライバシーは完全に守られます。",
+      success: "ありがとうございます！追ってご連絡いたします。"
+    },
     features: {
       stats: {
         nano: "ナノ粒子",
@@ -210,9 +270,16 @@ export const translations = {
       },
       kinetic: {
         title: "物理学。",
-        desc: "3D空間で磁性流体（フェロフルイド）を探索。対話的な操作でトゲを生成。",
+        desc: "3D空間で磁性流体（フェロフルイド）を探索。口笛と対話的な操作でトゲを生成。",
         simName: "3Dフェロフルイド・シミュレーション",
-        nanoPhysics: "3Dナノ物理学"
+        nanoPhysics: "3Dナノ物理学",
+        colors: "神秘的な色",
+        interaction: "磁気相互作用",
+        venom: "Venom Fluid エディション",
+      },
+      safety: {
+        title: "安全上のご注意。",
+        desc: "高品質のガラス製ボトル。開封しないでください。火気や熱から遠ざけ、お子様の手の届かないところに保管してください。破損した場合は、中の液体に触れたり、吸い込んだり、飲み込んだりしないでください。",
       },
       movement: {
         title: "動きの芸術。",
@@ -242,6 +309,7 @@ export const translations = {
     footer: {
       desc: "材料科学と現代アートの融合。",
       copy: "© 2026 FerroFlow Inc.",
+      attribution: "磁性流体シミュレーションは Robert Leitl のオープンソース（MITライセンス）に基づいています。",
       links: {
         prisma: "Prisma シリーズ",
         orbital: "Orbital シリーズ",
