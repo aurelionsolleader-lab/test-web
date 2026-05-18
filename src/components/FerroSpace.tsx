@@ -11,7 +11,7 @@ const FerroSpace = ({
   return (
     <div className={`w-full h-full relative ${theme === 'dark' ? 'bg-[#000000]' : 'bg-[#ffffff]'}`}>
       <iframe
-        src={`/ferrofluid/dist/index.html?${params}`}
+        src={`/simulation.html?${params}`}
         className="w-full h-full border-0 outline-none"
         title="Ferrofluid Simulation by Robert Leitl"
       />

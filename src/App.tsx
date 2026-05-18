@@ -8,8 +8,6 @@ import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls, ContactShadows } from "@react-three/drei";
 import { translations } from "./lib/translations";
 
-import FerrofluidWebgl from "./components/FerrofluidWebgl";
-
 type Lang = 'en' | 'vi' | 'zh' | 'ja';
 
 /**
@@ -323,7 +321,7 @@ const KineticSection = ({ theme, t }: { theme: 'dark' | 'light', t: any }) => {
       }`}
     >
       <div className="absolute inset-0 z-0 overflow-hidden rounded-[32px] md:rounded-[48px]">
-        <FerrofluidWebgl />
+        <FerroSpace theme={theme} />
       </div>
       
       <div className="absolute top-6 md:top-8 left-6 md:left-8 pointer-events-none z-10 mix-blend-difference">
