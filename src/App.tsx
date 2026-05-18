@@ -505,7 +505,6 @@ export default function App() {
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-700 ${theme === 'dark' ? 'bg-black text-white' : 'bg-[#fafafa] text-[#1d1d1f]'}`}>
-      <div className="grain-overlay" />
       <FerroCanvas theme={theme} />
       <ScrollToTop theme={theme} />
       <WaitingListModal isOpen={isWaitingListOpen} onClose={() => setIsWaitingListOpen(false)} theme={theme} lang={lang} t={t} />

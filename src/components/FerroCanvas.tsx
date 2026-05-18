@@ -82,7 +82,12 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
       const currentY = window.scrollY;
       const dy = currentY - scrollRef.current.y;
       scrollRef.current.y = currentY;
-      scrollRef.current.v += dy * 0.5; // Accumulate velocity immediately
+      scrollRef.current.v += dy * 0.8; // More aggressive, instant accumulation
+      
+      // Cap scroll velocity immediately
+      if (Math.abs(scrollRef.current.v) > 150) {
+        scrollRef.current.v = Math.sign(scrollRef.current.v) * 150;
+      }
       
       mouseRef.current.active = true;
       requestDraw();
@@ -100,8 +105,8 @@ const FerroCanvas: React.FC<FerroCanvasProps> = ({ theme = 'dark' }) => {
       }
       activeFrames--;
 
-      // Decay scroll velocity smoothly
-      scrollRef.current.v *= 0.85;
+      // Decay scroll velocity quickly to avoid lingering
+      scrollRef.current.v *= 0.8;
       
       // Cap scroll velocity
       if (Math.abs(scrollRef.current.v) > 100) {

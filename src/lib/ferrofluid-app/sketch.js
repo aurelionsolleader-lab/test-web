@@ -50,7 +50,7 @@ export class Sketch {
     targetZoomLerp = 0;
 
     // resolution of the spikes plane (side segments)
-    planeResolution = 256;
+    planeResolution = 512;
 
     // entry animation properties
     entryDelay = 120; // frames
@@ -137,11 +137,16 @@ export class Sketch {
         this.simulationParams.DOMAIN_SCALE = this.domainScale;
         this.simulationParamsNeedUpdate = true;
 
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const dpr = window.devicePixelRatio || 1;
         const needsResize = twgl.resizeCanvasToDisplaySize(this.canvas, dpr);
 
         if (needsResize) {
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            this.viewportSize = vec2.set(
+                this.viewportSize,
+                gl.drawingBufferWidth,
+                gl.drawingBufferHeight
+            );
         }
 
         this.#updateProjectionMatrix(gl);
@@ -354,8 +359,8 @@ export class Sketch {
                  src: this.initialOffsetTextureData,
              },
              heightMap: {
-                min: isIOS ? gl.NEAREST : gl.LINEAR,
-                mag: isIOS ? gl.NEAREST : gl.LINEAR,
+                min: gl.LINEAR,
+                mag: gl.LINEAR,
                 wrap: gl.CLAMP_TO_EDGE,
                 width: this.heightMapSize,
                 height: this.heightMapSize,
@@ -374,11 +379,28 @@ export class Sketch {
         /** @type {WebGLRenderingContext} */
         const gl = this.gl;
 
-        this.envMapTextureLoaded = true;
+        this.envMapTextureLoaded = false;
 
-        this.envMapTexture = twgl.createTexture(gl, {
-            src: envMap01Url,
-        });
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+            this.envMapTextureLoaded = true;
+            this.envMapTexture = twgl.createTexture(gl, {
+                src: img,
+                min: gl.LINEAR,
+                mag: gl.LINEAR,
+            });
+        };
+        img.onerror = () => {
+            console.error("couldn't load envMap01, using fallback");
+            this.envMapTextureLoaded = true;
+            this.envMapTexture = twgl.createTexture(gl, {
+                src: [255, 255, 255, 255],
+                width: 1,
+                height: 1
+            });
+        };
+        img.src = envMap01Url;
     }
 
     #updatePointer() {
