@@ -382,7 +382,6 @@ export class Sketch {
         this.envMapTextureLoaded = false;
 
         const img = new Image();
-        img.crossOrigin = "anonymous";
         img.onload = () => {
             this.envMapTextureLoaded = true;
             this.envMapTexture = twgl.createTexture(gl, {
