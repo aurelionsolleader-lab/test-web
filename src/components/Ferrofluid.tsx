@@ -131,6 +131,37 @@ export default function Ferrofluid({ sharpness = 3.0 }: FerrofluidProps = {}) {
       vec3 transformed = p0;
       `
     );
+
+    // Fragment Shader: Smooth gradients and Fresnel Rim Lighting
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <common>',
+      `#include <common>
+      uniform float uTime;
+      `
+    );
+
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <dithering_fragment>',
+      `#include <dithering_fragment>
+      
+      // Fresnel effect for rim lighting
+      vec3 viewDir = normalize(vViewPosition);
+      vec3 norm = normalize(vNormal);
+      float fresnel = pow(1.0 - max(dot(viewDir, norm), 0.0), 3.5); // Slightly sharper Fresnel
+      
+      // Target specific coloring and smooth highlights
+      // Apply Fresnel Rim Light (Silver/White)
+      vec3 rimColor = vec3(0.9, 0.9, 1.0); 
+      gl_FragColor.rgb += rimColor * fresnel * 0.4;
+      
+      // Smooth gradient falloff for reflections and highlights
+      // This prevents the cel-shaded look
+      gl_FragColor.rgb = smoothstep(0.0, 1.0, gl_FragColor.rgb);
+      
+      // Deepen blacks to ensure "Nền đen tuyền tuyệt đối"
+      gl_FragColor.rgb *= 1.1; 
+      `
+    );
   };
 
   return (
@@ -140,16 +171,14 @@ export default function Ferrofluid({ sharpness = 3.0 }: FerrofluidProps = {}) {
       <meshPhysicalMaterial
         ref={materialRef}
         onBeforeCompile={onBeforeCompile}
-        color="#0a0a0a"      
-        emissive="#000000"
-        metalness={1.0}      
-        roughness={0.05}     
-        clearcoat={1.0}      
-        clearcoatRoughness={0.05}
-        iridescence={1.0}
-        iridescenceIOR={1.5}
-        iridescenceThicknessRange={[100, 400]}
-        envMapIntensity={3.0} 
+        color="#000000"      
+        roughness={0.02}
+        metalness={0.9}
+        clearcoat={1.0}
+        clearcoatRoughness={0.0}
+        ior={1.7}
+        transmission={0.0}
+        envMapIntensity={2.5}
         reflectivity={1.0}
       />
     </mesh>

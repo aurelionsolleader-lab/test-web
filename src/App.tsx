@@ -3,7 +3,6 @@ import { ChevronRight, Menu, X, Instagram, Twitter, Youtube, Sun, Moon, Globe, A
 import { useState, useRef, useEffect } from "react";
 import FerroSpace from "./components/FerroSpace";
 import FerroCanvas from "./components/FerroCanvas";
-import Ferrofluid from "./components/Ferrofluid";
 import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls, ContactShadows } from "@react-three/drei";
 import { translations } from "./lib/translations";
@@ -314,7 +313,7 @@ const KineticSection = ({ theme, t }: { theme: 'dark' | 'light', t: any }) => {
       transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`w-full h-[450px] md:h-[650px] rounded-[32px] md:rounded-[48px] overflow-hidden border relative group shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-700 backdrop-blur-md flex flex-col z-[10000] ${
+      className={`w-full h-[450px] md:h-[650px] rounded-[32px] md:rounded-[48px] overflow-hidden border relative group shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-700 backdrop-blur-md flex flex-col z-10 ${
         theme === 'dark' 
           ? 'bg-[#050507]/60 border-white/10 ring-1 ring-white/5' 
           : 'bg-white/40 border-black/10 ring-1 ring-black/5'
